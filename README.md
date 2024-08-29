@@ -1,2 +1,2 @@
 # ReferenceWork
-This repository contains a few of my jupyter notebooks written for some of my classes.
+This repository contains some of my work that i did for my classes
