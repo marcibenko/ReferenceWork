@@ -1,0 +1,92 @@
+A csoport
+1feladat
+
+a,b
+
+create table Project_allocation(
+  Project_Id number,
+  Allocation_Percentage number(3),
+  Start_Date date,
+  End_Date date,
+  Employee_Id number(6,0),
+  constraint p_pk primary key (Project_ID),
+  constraint e_fk foreign key (employee_ID)
+  references employees (employee_id),
+  constraint c check(allocation_percentage between 1 and 100)
+);
+
+d
+
+insert into Project_allocation 
+(project_id, allocation_percentage, start_date,end_date,employee_id)
+values (1,50,TO_DATE('2023.01.15','YYYY.MM.DD'),
+  TO_DATE('2023.06.30','YYYY.MM.DD'),100);
+
+insert into Project_allocation 
+(project_id, allocation_percentage, start_date,end_date,employee_id)
+values (2,80,TO_DATE('2023.02.1','YYYY.MM.DD'),
+  TO_DATE('2023.07.31','YYYY.MM.DD'),101);
+  
+insert into Project_allocation 
+(project_id, allocation_percentage, start_date,end_date,employee_id)
+values (3,40,TO_DATE('2023.01.20','YYYY.MM.DD'),
+  TO_DATE('2023.06.05','YYYY.MM.DD'),102);
+  
+insert into Project_allocation 
+(project_id, allocation_percentage, start_date,end_date,employee_id)
+values (4,60,TO_DATE('2023.02.15','YYYY.MM.DD'),
+  TO_DATE('2023.02.15','YYYY.MM.DD'),103);
+
+
+2feladat
+
+a
+
+select first_name || ' '|| last_name név, project_id
+from employees e, project_Allocation p
+where e.employee_id = p.employee_id
+and to_char(start_date,'MM') in ('03','04','05')
+order by 1 asc
+
+b
+
+select first_name || ' '|| last_name név,email, project_id,start_date,end_date
+from employees e
+inner join project_allocation p 
+using(employee_id)
+where lower(last_name) like '%ol%'
+
+c
+
+create view project_allocation_status as
+select first_name || ' '|| last_name név, 
+case 
+when allocation_percentage<=35 then 'Alacsony'
+when allocation_percentage between 35 and 65 then 'Közepes'
+else 'Magas'
+end Állapot
+from employees e, project_allocation p
+where e.employee_id = p.employee_id
+
+d
+
+select last_name as beosztott, prior last_name felettes
+from employees
+where level >= 2
+start with employee_id = 100
+connect by manager_id = prior employee_id
+
+3
+
+a
+
+delete from project_allocation
+where allocation_percentage > 50
+
+
+b
+
+drop view project_allocation_status
+drop table project_Allocation
+
+

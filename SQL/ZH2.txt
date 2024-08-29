@@ -1,0 +1,92 @@
+--1feladat
+set serveroutput on;
+create or replace procedure fv(neptunkod in char)
+is kurzusok number;
+begin 
+select count(*) into kurzusok from leckekonyv l
+where l.neptunid = neptunkod
+group by l.neptunid;
+if kurzusok >= 1 then
+  dbms_output.put_line('A hallgató által felvett kurzusok száma ' || kurzusok);
+else
+  dbms_output.put_line('A hallgato nem vett fel kurzust');
+end if;
+end;
+/
+execute fv('OEM5G1');
+execute fv('OER1K2');
+
+--2feladat
+create or replace trigger ujkurzus
+before insert on kurzusok
+for each row
+begin
+if :new_kredit >= 3 then
+  dbms_output.put_line('Új kurzus felvéve ' || :new_nev);
+else
+  :new_kredit:=3;
+  dbms_output.put_line('Új kurzus felvéve (javított kredit)' || :new_nev);
+end if;
+end;
+/
+savepoint mentes;
+insert into kurzusok values(12345,'3kredit');
+insert into kurzusok values(54321,'2kredit');
+rollback to mentes;
+
+--3feladat
+--a
+select h.vnev, h.knev
+from hallgatok h
+where neptunid in
+(select unique l.neptunid
+from leckekonyv l
+join oktatok o on o.oktatoid = l.oktatoid
+where o.FIZETES = (select min(fizetes) from oktatok))
+
+--b
+select o.vnev, avg(l.ertekeles), count(*)
+from leckekonyv l
+join oktatok o on o.oktatoid = l.oktatoid
+group by o.vnev
+having avg(ertekeles) = 2
+order by 1 desc
+fetch first 10 rows only
+
+--c
+update oktatok
+set fizetes = (select avg(fizetes)*3 from oktatok)
+where fizetes = (select max(fizetes) from oktatok)
+
+--d
+select unique neptunid from leckekonyv
+where kurzusid not in (select kurzusid from kurzusok
+where elofeltetelid is null)
+
+--e
+select count(*)
+from leckekonyv
+where oktatoid in
+(select oktatoid
+from oktatok
+order by fizetes desc
+fetch first 5 rows only)
+
+--4feladat
+create user Dr_Docens identified by Dr_Docens;
+create user SQ_Judit identified by SQ_Judit;
+
+grant select on hallgatok to SQ_Judit;
+
+create role Administrator;
+grant create session to Administrator;
+grant update ertekeles on leckekonyv to Administrator;
+grant select on leckekonyv to Administrator;
+
+grant Administrator to Dr_Docens;
+select * from leckekonyv;
+
+
+
+
+
